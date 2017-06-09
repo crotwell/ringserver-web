@@ -57,7 +57,7 @@ export class RingserverConnection {
 
       function handler() {
         if (this.readyState === this.DONE) {
-          console.log("handle /id: "+mythis.host()+" "+this.status);
+          console.log("Handle /id: "+mythis.host()+" "+this.status);
           if (this.status === 200) { resolve(this.response); }
           else {
             console.log("Reject version: "+mythis.host()+" "+this.status);reject
@@ -103,12 +103,12 @@ export class RingserverConnection {
       for(let line of lines) {
         let vals = line.split(/\s+/);
         if (vals.length === 0) {
-// blank line, skip
+          // blank line, skip
+          continue;
         } else if (vals.length >= 2) {
-console.log("streams push: "+vals[0]+", "+vals[1]+", "+vals[2]);
           out.streams.push(new StreamStat(vals[0], vals[1], vals[2]));
         } else {
-          console.log("bad line: '"+line+"'");
+          console.log("Bad /streams line, skipping: '"+line+"'");
         }
       }
       return out;
@@ -132,7 +132,7 @@ console.log("streams push: "+vals[0]+", "+vals[1]+", "+vals[2]);
 
       function handler() {
         if (this.readyState === this.DONE) {
-          console.log("handle /id: "+mythis.host()+" "+this.status);
+          console.log("Handle /id: "+mythis.host()+" "+this.status);
           if (this.status === 200) { resolve(this.response); }
           else {
             console.log("Reject version: "+mythis.host()+" "+this.status);reject
