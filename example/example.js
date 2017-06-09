@@ -38,12 +38,13 @@ conn.pullStreams(match).then(function(streamsResult) {
     .text('Access: '+streamsResult.accessTime.toISOString()+" Found: "+streamsResult.streams.length);
   var tbl = d3.select('.streams')
     .select(table);
-  var th = tbl.append('tr');
+  var th = tbl.append('thead').append('tr');
   th.append('th').text('Stream');
   th.append('th').text('Start');
   th.append('th').text('End');
   th.append('th').text('Latency');
   var streamList = tbl
+    .append('tbody')
     .selectAll('tr')
     .data(streamsResult.streams);
 
