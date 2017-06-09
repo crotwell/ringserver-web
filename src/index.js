@@ -10,9 +10,11 @@ import moment from 'moment';
 
 export { seisplotjs };
 
+export let IRIS_HOST = 'rtserve.iris.washington.edu';
+
 export class RingserverConnection {
   constructor(host, port) {
-    this._host = host;
+    this._host = (host ? host : IRIS_HOST);
     this._port = (port ? port : 80);
   }
 
@@ -25,6 +27,10 @@ export class RingserverConnection {
   }
 
 
+  /** Pulls id result from ringserver /id parsed into an object with
+    * 'ringserverVersion' and 'serverId' fields. 
+    * Result returned is an RSVP Promise.
+    */
   pullId() {
     return this.pullIdRaw().then(raw => {
       let lines = raw.split('\n');
@@ -35,6 +41,9 @@ export class RingserverConnection {
     });
   }
 
+  /** Pulls raw result from ringserver /id. 
+    * Result returned is an RSVP Promise.
+    */
   pullIdRaw() {
     let mythis = this;
     let promise = new RSVP.Promise(function(resolve, reject) {
@@ -59,10 +68,34 @@ export class RingserverConnection {
     return promise;
   }
 
+  /** 
+   *  Use numeric level (1-6) to pull just IDs from ringserver. 
+   *  In a default ringserver,
+   *  level=1 would return all networks like
+   *  CO
+   *  and level=2 would return all stations like 
+   *  CO_JSC
+   *  If level is falsy/missing, level=6 is used.
+    * Result returned is an RSVP Promise.
+   */
+  pullStreamIds(level) {
+    let queryParams = 'level=6';
+    if (level && level > 0) { queryParams = 'level='+level; }
+    return this.pullStreamsRaw(queryParams).then(raw => {
+      return raw.split('\n');
+    });
+  }
 
-
-  pullStreams() {
-    return this.pullStreamsRaw().then(raw => {
+  /** 
+    * Pull streamd, including start and end times, from the ringserver.
+    * The optional matchPattern is a regular expression, so for example
+    * '.+_JSC_00_HH.' would get all HH? channels from any station name JSC.
+    * Result returned is an RSVP Promise.
+    */
+  pullStreams(matchPattern) {
+    let queryParams = null;
+    if (matchPattern) { queryParams = 'match='+matchPattern; }
+    return this.pullStreamsRaw(queryParams).then(raw => {
       let lines = raw.split('\n');
       let out = {};
       out.accessTime = moment().utc();
@@ -82,10 +115,14 @@ console.log("streams push: "+vals[0]+", "+vals[1]+", "+vals[2]);
     });
   }
 
-  pullStreamsRaw() {
+  /** Pulls raw result from ringserver /streams. QueryParams should
+    * be formatted like URL query parameters, ie 'name=value&name=value'.
+    * Result returned is an RSVP Promise.
+    */
+  pullStreamsRaw(queryParams) {
     let mythis = this;
     let promise = new RSVP.Promise(function(resolve, reject) {
-      let url = mythis.formStreamsURL();
+      let url = mythis.formStreamsURL(queryParams);
       let client = new XMLHttpRequest();
       client.open("GET", url);
       client.onreadystatechange = handler;
@@ -114,8 +151,8 @@ console.log("streams push: "+vals[0]+", "+vals[1]+", "+vals[2]);
     return this.formBaseURL()+'/id';
   }
 
-  formStreamsURL() {
-    return this.formBaseURL()+'/streams';
+  formStreamsURL(queryParams) {
+    return this.formBaseURL()+'/streams'+(queryParams ? '?'+queryParams : '');
   }
 
 
