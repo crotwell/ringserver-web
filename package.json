@@ -4,6 +4,8 @@
   "description": "Javascript library for parsing, manipulating and displaying output from the web interface of the IRIS Ringserver.",
   "main": "lib/index.js",
   "dependencies": {
+    "moment": "^2.18.1",
+    "rsvp": "^3.5.0",
     "seisplotjs": ">= 1.0.0"
   },
   "scripts": {

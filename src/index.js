@@ -4,18 +4,29 @@
  * http://www.seis.sc.edu
  */
 
-import seisplotjs from 'seisplotjs';
+import * as seisplotjs from 'seisplotjs';
+import RSVP from 'rsvp';
+import moment from 'moment';
 
 export { seisplotjs };
 
 export class RingserverConnection {
   constructor(host, port) {
-    this.host = host;
-    this.port = (port ? port : 80);
+    this._host = host;
+    this._port = (port ? port : 80);
   }
 
+  host(value) {
+    return arguments.length ? (this._host = value, this) : this._host;
+  }
+
+  port(value) {
+    return arguments.length ? (this._port = value, this) : this._port;
+  }
+
+
   pullId() {
-    return this.pullIdRaw().then(raw -> {
+    return this.pullIdRaw().then(raw => {
       let lines = raw.split('\n');
       return {
         'ringserverVersion': lines[0],
@@ -51,14 +62,21 @@ export class RingserverConnection {
 
 
   pullStreams() {
-    return this.pullStreamsRaw().then(raw -> {
+    return this.pullStreamsRaw().then(raw => {
       let lines = raw.split('\n');
       let out = {};
-      out.accessTime = new Date();
+      out.accessTime = moment().utc();
       out.streams = [];
       for(let line of lines) {
-        let vals = line.split(' ');
-        out.streams.push(new StreamStat(vals[0], vals[1], vals[2]));
+        let vals = line.split(/\s+/);
+        if (vals.length === 0) {
+// blank line, skip
+        } else if (vals.length >= 2) {
+console.log("streams push: "+vals[0]+", "+vals[1]+", "+vals[2]);
+          out.streams.push(new StreamStat(vals[0], vals[1], vals[2]));
+        } else {
+          console.log("bad line: '"+line+"'");
+        }
       }
       return out;
     });
@@ -89,10 +107,10 @@ export class RingserverConnection {
   }
 
   formBaseURL() {
-    return 'http://'+this.host+(this.port==80?'':':'+this.port);
+    return 'http://'+this.host()+(this.port()==80?'':':'+this.port());
   }
 
-  formIDURL() {
+  formIdURL() {
     return this.formBaseURL()+'/id';
   }
 
@@ -101,4 +119,17 @@ export class RingserverConnection {
   }
 
 
+};
+
+export class StreamStat {
+  constructor(key, start, end) {
+    this.key = key;
+    this.startRaw = start;
+    this.endRaw = end;
+    this.start = moment(start+'Z');
+    this.end = moment(end+'Z');
+  }
+  calcLatency(accessTime) {
+    return this.end.from(accessTime);
+  }
 };
