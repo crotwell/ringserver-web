@@ -10,7 +10,9 @@ import moment from 'moment';
 
 export { seisplotjs };
 
-export let IRIS_HOST = 'rtserve.iris.washington.edu';
+export const IRIS_HOST = 'rtserve.iris.washington.edu';
+
+const ORG = 'Organization: ';
 
 export class RingserverConnection {
   constructor(host, port) {
@@ -34,9 +36,13 @@ export class RingserverConnection {
   pullId() {
     return this.pullIdRaw().then(raw => {
       let lines = raw.split('\n');
+      let organization = lines[1];
+      if (organization.startsWith(ORG)) {
+        organization = organization.substring(ORG.length);
+      }
       return {
         'ringserverVersion': lines[0],
-        'serverId': lines[1]
+        'serverId': organization
       };
     });
   }

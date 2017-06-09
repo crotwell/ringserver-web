@@ -27,7 +27,7 @@ conn.pullId().then(function(servId) {
   tr.append('td').text('Ringserver:');
   tr.append('td').text(servId.ringserverVersion);
   tr = tbl.append('tr');
-  tr.append('td').text('Organization');
+  tr.append('td').text('Organization:');
   tr.append('td').text(servId.serverId);
 });
 
