@@ -2,8 +2,14 @@
 console.log("in example.js");
 console.log("in example.js ringserver: "+ringserver);
 
+var match = null;
+var conn = new ringserver.RingserverConnection('thecloud.seis.sc.edu', 6382);
 //var conn = new ringserver.RingserverConnection('eeyore.seis.sc.edu', 6382);
-var conn = new ringserver.RingserverConnection('10.80.193.159', 6382);
+//var conn = new ringserver.RingserverConnection('10.80.193.159', 6382);
+
+// default is IRIS, but CORS is broken
+//var conn = new ringserver.RingserverConnection();
+//var match = 'CO_.+';
 
 var d3 = ringserver.seisplotjs.d3;
 
@@ -27,7 +33,7 @@ conn.pullId().then(function(servId) {
 
 d3.select('.streams').select(table).remove();
 d3.select('.streams').append(table);
-conn.pullStreams().then(function(streamsResult) {
+conn.pullStreams(match).then(function(streamsResult) {
   d3.select('.streams').insert('p', table)
     .text('Access: '+streamsResult.accessTime.toISOString()+" Found: "+streamsResult.streams.length);
   var tbl = d3.select('.streams')
